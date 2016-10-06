@@ -1,5 +1,5 @@
 ---
-title: "SFIC_fxPlots"
+title: "fxPlots"
 author: "Dani Cosme"
 date: "October 6, 2016"
 output: 
