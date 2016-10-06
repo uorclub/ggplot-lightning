@@ -1,0 +1,78 @@
+---
+title: "SFIC_fxPlots"
+author: "Dani Cosme"
+date: "October 6, 2016"
+output: 
+  html_document: 
+    fig_height: 6
+    fig_width: 12
+---
+
+# load packages
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(wesanderson)
+```
+
+# load data
+```{r}
+data=read.csv('/Volumes/research/dsnlab/Studies/SFIC_Self3/analysis/rx/parcellations/subjectLevel/fxParcellations.csv', header=TRUE)
+```
+
+# tidy data for plotting
+```{r}
+data1 = data %>% group_by(subjectID, age, target, parcellation) %>% 
+  mutate(meanBeta = mean(beta, na.rm=TRUE)) %>%
+  select(-domain, -beta) %>%
+  unique(.) %>%
+  spread(target, meanBeta) %>%
+  mutate(meanDiff = self-other) %>%
+  filter(process != "control")
+
+data2 = data1 %>% select(-hemisphere, -region, -label, -meanDiff) %>% 
+  gather(condition, value, -subjectID, -age, -parcellation, -process)
+```
+
+# plot
+```{r, warning=FALSE, message=FALSE}
+palette = wes_palette("Zissou", 5, type = "continuous")
+palette2 = wes_palette("Zissou", 2, type = "continuous")
+cols = c("loess fit" = palette[5], "linear fit" = palette[3])
+
+ggplot(data1, aes(x=age, y=meanDiff, group=parcellation)) +
+  geom_point(alpha=.5, color=palette[1]) +
+  geom_line(aes(group=subjectID), alpha=.25, color=palette[1]) +
+  geom_smooth(aes(color="loess fit")) +
+  geom_smooth(aes(color="linear fit"), method="lm") +
+  facet_grid(~process + parcellation, scales="free") + 
+  scale_color_manual(values=cols) + 
+  scale_x_continuous(breaks=c(10,13,16)) +
+  coord_cartesian(ylim=c(-.75,.75)) +
+  labs(y = "Mean difference of parameter estimates for self > other") +
+  theme(legend.position = c(.95, .1),
+        legend.text=element_text(size=rel(1.25)),
+        legend.title=element_blank(),
+        axis.text.x=element_text(size = rel(.75)),
+        axis.text.y=element_text(size = rel(1.25)),
+        strip.text.x = element_text(size = rel(1.25))) 
+  
+ggplot(data2, aes(x=age, y=value, color = condition, group=interaction(subjectID,condition))) +
+  geom_point(alpha=.1) +
+  geom_line(alpha=.1) +
+  geom_line(aes(group=condition), stat = "smooth", method = "loess", size=1) +
+  facet_grid(~process + parcellation, scales="free") + 
+  guides(fill=FALSE) +
+  scale_color_manual(values=palette2) +
+  scale_x_continuous(breaks=c(10,13,16))+
+  coord_cartesian(ylim=c(-.75,.75)) +
+  labs(y = "Parameter estimates of mean activity") +
+  theme(legend.position = c(.95, .1),
+        legend.text=element_text(size=rel(1.25)),
+        legend.title=element_blank(),
+        axis.text.x=element_text(size = rel(.75)),
+        axis.text.y=element_text(size = rel(1.25)),
+        strip.text.x = element_text(size = rel(1.25))) 
+
+```
