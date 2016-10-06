@@ -18,7 +18,7 @@ library(wesanderson)
 
 # load data
 ```{r}
-data=read.csv('/Volumes/research/dsnlab/Studies/SFIC_Self3/analysis/rx/parcellations/subjectLevel/fxParcellations.csv', header=TRUE)
+data=read.csv('~/Desktop/fxParcellations.csv', header=TRUE)
 ```
 
 # tidy data for plotting
